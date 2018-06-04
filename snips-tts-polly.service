@@ -1,0 +1,12 @@
+# /etc/systemd/system/snips-tts-polly.service
+[Unit]
+Description=snips-tts-polly
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/snips-tts-polly
+Restart=always
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target
