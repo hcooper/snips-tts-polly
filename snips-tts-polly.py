@@ -14,15 +14,9 @@ import toml
 
 
 """
-This is a replacement for `snips-tts`, using the higher quality
-AWS Polly service to produce audio from text.
-
-It listens on the same MQTT topics as snips-tts. Both can run at the same time,
-but it will cause duplicate audio output. Therefore stopping the existing
-snips-tts service is probably best (`systemctl stop|disable snips-tts`).
-
-Initially developed from jarvis_listener.py by @tschmidty69
-https://github.com/tschmidty69/homeassistant-config/blob/master/shell_command/jarvis_listener.py
+A replacement for `snips-tts`, using the AWS Polly
+service to produce high quality speech from text.
+https://github.com/hcooper/snips-tts-polly
 """
 
 
