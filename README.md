@@ -1,3 +1,6 @@
+***In light of Snips being acquired, and its public services being shutdown, this plugin is no longer maintained. See https://www.home-assistant.io/blog/2019/12/03/sonos-shutting-down-local-voice-option-snips/ for more information.***
+
+
 # snips-tts-polly
 
 This is a replacement for `snips-tts` (the text-to-speech component of the Snips voice assistant).
