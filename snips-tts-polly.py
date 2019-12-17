@@ -23,6 +23,7 @@ https://github.com/hcooper/snips-tts-polly
 def on_connect(client, userdata, flags, rc):
     print("MQTT connected")
     client.subscribe("hermes/tts/say")
+    client.subscribe("hermes/audioServer/+/playFinished")
 
 
 def _hash(text: str) -> str:
@@ -66,18 +67,41 @@ def tts_say(client, userdata, msg, voice="Raveena") -> None:
     else:
         print("Using cached file: {}".format(wav_path))
 
+    # save some ids to properly end session
+    global play_id 
+    global play_session_id 
+    global say_id 
+    play_id = _random_id()
+    play_session_id = data["sessionId"]
+    say_id = data["id"] 
+    
     msgs = [
         {
-            "topic": "hermes/audioServer/default/playBytes/{}".format(_random_id()),
+            "topic": "hermes/audioServer/{}/playBytes/{}".format(data["siteId"], play_id),
             "payload": wav_path.open("rb").read(),
-        },
-        {
-            "topic": "hermes/tts/sayFinished",
-            "payload": json.dumps({"id": data["id"], "sessionId": data["sessionId"]}),
         },
     ]
 
     publish.multiple(msgs, hostname=mqtt_host, port=mqtt_port)
+
+def tts_finish(client, userdata, msg):
+    data = json.loads(msg.payload.decode())
+    print("running tts_finish.")
+    global play_id
+    global play_session_id 
+    global say_id
+    if play_id == data["id"]:
+        msgs = [
+            {
+                "topic": "hermes/tts/sayFinished",
+                "payload": json.dumps({"id": say_id, "siteId": data["siteId"], "sessionId": play_session_id}),
+            },
+        ]
+        play_id = None
+        play_session_id = None
+        say_id = None
+        publish.multiple(msgs, hostname=mqtt_host, port=mqtt_port)
+
 
 
 # Read MQTT connection info from the central snips config.
@@ -85,8 +109,8 @@ snips_config = toml.loads(open("/etc/snips.toml").read())
 
 client = mqtt.Client()
 client.on_connect = on_connect
-
 client.message_callback_add("hermes/tts/say", tts_say)
+client.message_callback_add("hermes/audioServer/+/playFinished", tts_finish)
 
 mqtt_host, mqtt_port = snips_config["snips-common"]["mqtt"].split(":")
 mqtt_port = int(mqtt_port)
